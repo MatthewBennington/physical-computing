@@ -1,0 +1,138 @@
+d>
+		<meta http-equiv="content-type" content="text/html;charset=iso-8859-1">
+		<title>Physical Computing</title>
+		<link rel="stylesheet" href="../css/tomstyle.css" type="text/css">
+	</head>
+
+	<body>
+		&nbsp;
+		<center>
+			<table border="0" cellpadding="8" cellspacing="10" width="600" align="center">
+				<tr>
+					<td rowspan="4" valign="top"><span class="margin"> 
+
+<P align="right"><a href="/intro.shtml">Tom's Main Menu</a>
+<P align="right"><A href="/pcomp/index.shtml">Physical Computing Home</A>
+<P align="right"><A href="http://itp.nyu.edu/physcomp/Intro/HomePage">Intro to Physical Computing Syllabus</A>
+<P align="right"><a href="http://itp.nyu.edu/netobjects">Networked Objects</a>
+<P align="right"><a href="http://itp.nyu.edu/sustainability">Sustainable Practices</a>
+<P align="right"><A href="/blog/">blog</A>
+<P align="right"><A href="/pcomp/resources/">Resources</A>
+<P align="right"><A href="/pcomp/code/">code, circuits, & construction</A>
+<p>
+<p align="right"><a href="links.shtml">my del.icio.us links</a>
+<P><table width="100" border="0" cellspacing="0" cellpadding="0">
+	<tr>
+		<td>&nbsp;</td>	
+	</tr>
+</table>
+</span>
+
+					</td>
+					<td colspan="2" align="left" valign="top">
+						<h2>Serial to the Desktop</h2>
+					</td>
+					<td align="left" valign="top"></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="left" valign="top">One of the most common uses for serial communication is to link a desktop computer with a microcontroller or other serial device. All desktop computers have a serial port of some form or another. While it used to be standard that all desktop computers had an RS-232 serial port, most are now moving to USB, a faster and more complicated serial protocol. However, even if there is not an RS-232 serial port available on your computer, there are plenty of USB-to-serial adaptors available. Through the serial port, you can create an entirely new physical interface for the desktop computer, or use the computer to control things too complex to manage on a microcontroller, like sound and video.<p>Almost any programming language or environment you use will have tools for accessing the serial ports on your computer. Although the examples below are given in a specific environment, the principles can be applied to most programming environment and device.</p>
+						<p>The first thing to keep in mind when working with a computer's serial port is that only one program can use the serial port at a time. If you have only one serial port, and you're using your computer to program the microcontroller, this means that you will have to close the serial port in the programming environment while you use the computer's serial port in another program, like HyperTerminal or zTerm or Director. If you get an error message saying something like &quot;can't open serial port&quot;, it probably means that some other program is using the serial port. In addition to the programs already mentioned, some other programs that might commonly use the serial port include sync software for PDAs, printer drivers, MIDI interfaces, some networking extensions like the Macintosh's Appletalk, and others. If you can't open the serial port because it's already in use, check to see what other programs or utilities might already be using it.</p>
+						<p>The second thing to remember: always start with the simplest tool. A terminal program like HyperTerminal on the PC, or <a href="http://www.tsc.udel.edu/macsoftdist/zterm.html" target="_other">zTerm</a> on or the <a href="http://www.tigoe.net/pcomp/resources/archives/avr/000749.shtml#000749">screen command in the Terminal window</a> the mac will allow you to do nothing but see the serial data coming in from your microcontroller. These are your best debugging tools on the desktop. Before you start to develop a more complex program, always check to see that you are getting serial data in to the desktop using a terminal program.</p>
+						<p>Once you've seen data passing back and forth in a terminal program, you're ready to start with another application.</td>
+					<td align="left" valign="top"></td>
+				</tr>
+				<tr>
+					<td colspan="2" align="left" valign="top">
+						<h2>Serial in Processing</h2>
+						<p>Like many programming environments, Processing has a separate serial library for serial communication. This library allows you to access the serial ports on the computer you are on, set the data rate and other communication parameters, read the bytes from the serial input buffer, and write to the output buffer. These functions are similar to the various commands discussed to access a microcontroller's serial ports.</p>
+						<p>The first thing you have to do when using the serial library is to import the serial library into your sketch like so:
+						</p>
+						
+						<pre>
+import processing.serial.*;
+						</pre>
+						<P>
+						While you're at it, declare a global variable to hold an instance of the serial library like so:</P>
+						<pre>
+Serial port;
+						</pre>
+						<p>
+						Next, in the setup() method, you might want to get Processing to print a list of the available serial ports:
+						</p>
+						<pre>
+println(Serial.list());
+						</pre>
+						<p>
+						Then, instantiate the library using the <tt>new()</tt> method, as follows:</p>
+						<pre>
+port = new Serial(this, Serial.list()[0], 9600);
+</pre>
+						<p>In this example, the first serial port available (usually COM1 on a PC) is used, at 9600 bps. Now you can start sending data back and forth.</p>
+						<p>To send a byte out, use the <tt>write()</tt> method.  <tt>write()</tt> takes one of two data types: either an <tt>int</tt>, or an array of <tt>bytes</tt>. If you're sending data to a microcontroller, you could send it as an array of <tt>bytes</tt>, and let the microcontroller read the data byte-by-byte. For example, here's how to send three bytes:</p>
+						<pre>
+byte[] myVar = new byte[3];
+myVar[0] = 65;
+myVar[1] = 66;
+myVar[2] = 67;
+port.write(myVar);
+</pre>
+						<p>
+						Whenever new incoming data is available, it's placed in a special place in memory called the serial buffer.  A few methods from the serial library are used to deal with the serial buffer.  <tt>available()</tt> reports the number of bytes available to read.  <tt>read()</tt> reads the oldest available byte in the serial buffer.  Here's a simple example of how to read a byte from the serial buffer:
+						</p>
+						<pre>
+ while (myPort.available() > 0) {
+    int inByte = myPort.read();
+    println(inByte);
+  }
+	</pre>
+						<p>Here's another example that expects three bytes. As each byte comes in, it's added to an array. When the array is three bytes long, the individual bytes are converted to other data types and put into other variables, to be used elsewhere in the program. <tt>SerialEvent()</tt> is a special event called a callback function that gets called whenever there is new data available in the serial buffer:</p>
+						<pre>
+void serialEvent(Serial port) {
+  // if this is the first byte received, 
+  // take note of that fact:
+  if (firstContact == false) {
+    firstContact = true; 
+  }
+  // Add the latest byte from the serial port to array:
+  serialInArray[serialCount] = port.read();
+  serialCount++;
+
+  // If we have 3 bytes:
+  if (serialCount > 2 ) {
+    xpos = serialInArray[0];
+    ypos = serialInArray[1];
+    fgcolor = serialInArray[2];
+
+    // print the values (for debugging purposes only):
+    println(xpos + "\t" + ypos + "\t" + fgcolor);
+    // Send a capital A to request new sensor readings:
+    port.write(65);
+    // Reset serialCount:
+    serialCount = 0;
+  }
+}</pre>
+					</td>
+					<td align="left" valign="top"></td>
+				</tr>
+				<tr>
+					<td align="left" valign="top" colspan="2">
+						<h2>Techniques for serial communication</h2>
+						<p>There are many ways to use the serial xtra, and ultimately, you should come up with techniques that work best for you and your particular application. Following are a few general techniques that can be useful in some cases.</p>
+						<p>When exchanging sensor data with a microcontroller, it's often the case that you need to continually gather a series of bytes from the controller representing the values of various sensors attached to the microcontroller. As mentioned in the <a href="serialdata.shtml">interpreting serial data</a> notes, this can sometimes be tricky, since you need to make sure all the bytes arrive, and are read in the right order. There are two common ways of dealing with this problem: punctuating the data string with a constant byte at the start, or setting up a &quot;call and response&quot; system, so that the microcontroller sends only one set of data at a time.</p>
+						<h4>Sending a constant header</h4>
+						<p>If you decide to do this, first you need to know the range of values possible for each sensor. If you can reduce the range of values for each sensor so that each sensor is represented by one byte, you will simplify sending the data. With digital inputs, this is simple. A switch can only be on or off, so only two values are needed to represent all the possible states of a switch. With analog sensors, determine how much range you need. How much difference can the user discern? Is it a very rough control, where they can tell only small, medium, and large amounts of effect on the sensor, or do very small differences make a difference? Could they rate their effect on a scale from one to ten? one to 100? These questions will help you determine how large a range of sensitivity you need.</p>
+						<p>Once you know the range of values of each byte to be sent, you need to make up a unique byte or series of bytes to use at the start or end of your data string. This series needs to be different from any if the values that the data bytes can have. For example, if you had three analog sensors to send values for, and each one could give a range from 0 to 200, you could send a byte with the value 255 at the start of the string. None of the sensors can ever have a value of 255, so the receiving computer would know that if a value of 255 is received, this must be the header byte. Everything that follows it until another byte of value 255 is received can be presumed to be data.</p>
+						<p>If you have to use the entire range of values in a byte (0-255) to represent a sensor, then you could make up a unique string to use as a header. Again, choose a series that is impossible or very unlikely to come from your sensors.</p>
+						<p>Once you have decided on a header, make sure to always send the same number of bytes after it. For example, if you have three sensors, send the header and three bytes after it, even if one sensor is reading 0. This way, in director, you can write your program that if you read a byte with the header's value, the next three bytes will always be the sensor's values, in order, sensor1, sensor2, and sensor3.</p>
+						<h4>Call and response</h4>
+						<p>Another, often simpler, approach to sending multi-byte strings it to use a &quot;call and response&quot; system. Under such a system, the microcontroller is programmed to listen for a byte from the computer (a call), and to send one set of readings in response. The computer, in turn, is programmed to send the call byte, then continue to receive bytes until it gets as many as should be in the data string, then to interpret them, then to send out another call. This prevents the receiving computer from starting to read in the middle of a string.</p>
+						<p>See the <a href="/pcomp/code/category/code/processing/50">Processing serial call and response example</a> in the examples section of the site for more details on this method.</td>
+					<td align="left" valign="top">&nbsp;</td>
+				</tr>
+			</table>
+			<p>
+			&nbsp;
+		</center>
+	</body>
+
+</html>
