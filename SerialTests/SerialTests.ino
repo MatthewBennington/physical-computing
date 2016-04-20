@@ -1,7 +1,3 @@
-//#include <SoftwareSerial.h>
-
-import processing.serial.*;
-
 void setup() {
  Serial.begin(9600);
 }
